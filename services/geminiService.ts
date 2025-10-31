@@ -1,9 +1,21 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { UserPreferences } from '../types';
 
-// This top-level check is removed to prevent the app from crashing.
-// The API key presence will be checked within the App component instead.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let ai: GoogleGenAI | null = null;
+
+/**
+ * Initializes and returns the GoogleGenAI client instance.
+ * This function uses a singleton pattern to ensure the client is created only once.
+ */
+const getGenAIClient = () => {
+  if (!ai) {
+    // The App component checks for process.env.API_KEY before calling any functions
+    // that use this service, so we can be confident the key exists here.
+    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  }
+  return ai;
+};
+
 
 const offerSchema = {
     type: Type.OBJECT,
@@ -33,7 +45,8 @@ const productSchema = {
 
 export async function generateProductRecommendations(query: string, preferences: UserPreferences) {
   try {
-    const response = await ai.models.generateContent({
+    const client = getGenAIClient();
+    const response = await client.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: `Based on the user query "${query}" and preferences: Budget - ${preferences.budget}, Preferred Brands - ${preferences.preferredBrands.join(', ')}, Sustainability Focus - ${preferences.sustainabilityFocus ? 'Yes' : 'No'}, find 3 to 5 relevant products. For each product, provide offers from at least two sources like Amazon and Flipkart if possible. Provide a brief conversational opening before the product list.`,
       config: {
@@ -70,7 +83,8 @@ export async function generateProductRecommendations(query: string, preferences:
 
 export async function summarizeReviews(productName: string) {
   try {
-    const response = await ai.models.generateContent({
+    const client = getGenAIClient();
+    const response = await client.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: `You are an expert product review analyst. Summarize the key pros and cons for the product "${productName}". Structure your response with 'Pros:' and 'Cons:' sections. Provide a balanced overview based on common customer feedback points like performance, build quality, and value for money. Keep it concise.`,
     });
