@@ -4,15 +4,17 @@ import type { ChatMessage } from '../types';
 import SendIcon from './icons/SendIcon';
 import ProductCard from './ProductCard';
 import SparklesIcon from './icons/SparklesIcon';
+import BellIcon from './icons/BellIcon';
 
 interface ChatWindowProps {
   messages: ChatMessage[];
   onSendMessage: (messageText: string) => void;
   onSummarize: (productName: string) => void;
+  onSetAlert: (product: any) => void; // Using any to avoid circular dependency issues
   isLoading: boolean;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, onSummarize, isLoading }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, onSummarize, onSetAlert, isLoading }) => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -30,19 +32,33 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, onSumm
     }
   };
 
+  const renderMessageContent = (msg: ChatMessage) => {
+    if (msg.type === 'alert') {
+      return (
+        <div className="max-w-xl p-4 rounded-2xl bg-cyan-900/50 border border-cyan-700 text-slate-200 rounded-bl-none flex items-center gap-3">
+          <BellIcon className="w-6 h-6 text-cyan-400 flex-shrink-0" />
+          <p className="whitespace-pre-wrap">{msg.text}</p>
+        </div>
+      );
+    }
+    return (
+       <div className={`max-w-xl p-4 rounded-2xl ${msg.sender === 'user' ? 'bg-blue-600/50 text-slate-100 rounded-br-none' : 'bg-slate-800 text-slate-300 rounded-bl-none'}`}>
+        <p className="whitespace-pre-wrap">{msg.text}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full bg-slate-900/70 backdrop-blur-md border border-slate-800 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
       <div className="flex-grow p-6 overflow-y-auto">
         <div className="flex flex-col gap-6">
           {messages.map((msg) => (
             <div key={msg.id} className={`flex flex-col gap-2 ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className={`max-w-xl p-4 rounded-2xl ${msg.sender === 'user' ? 'bg-blue-600/50 text-slate-100 rounded-br-none' : 'bg-slate-800 text-slate-300 rounded-bl-none'}`}>
-                <p className="whitespace-pre-wrap">{msg.text}</p>
-              </div>
+              {renderMessageContent(msg)}
               {msg.products && msg.products.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 mt-2 w-full max-w-4xl">
                   {msg.products.map((product, index) => (
-                    <ProductCard key={`${msg.id}-prod-${index}`} product={product} onSummarize={onSummarize} />
+                    <ProductCard key={`${msg.id}-prod-${index}`} product={product} onSummarize={onSummarize} onSetAlert={onSetAlert} />
                   ))}
                 </div>
               )}
