@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import ChatWindow from './components/ChatWindow';
 import PreferencesPanel from './components/PreferencesPanel';
@@ -17,6 +16,23 @@ const getBestOffer = (offers: Offer[]): Offer | null => {
 };
 
 const App: React.FC = () => {
+  // Check for API key at the component level for graceful failure
+  if (!process.env.API_KEY) {
+    return (
+      <div className="min-h-screen bg-slate-950 p-4 lg:p-8 flex items-center justify-center">
+        <div className="text-center bg-slate-900 border border-red-500/50 rounded-2xl p-8 max-w-2xl">
+          <h1 className="text-3xl font-bold text-red-400">Configuration Error</h1>
+          <p className="text-slate-300 mt-4">
+            The AI Shopping Assistant could not start because the Google Gemini API key is missing.
+          </p>
+          <p className="text-slate-400 mt-2 text-sm">
+            Please make sure the <code>API_KEY</code> environment variable is set in your deployment configuration and refresh the page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const [preferences, setPreferences] = useState<UserPreferences>({
     budget: 'under $500',
     preferredBrands: [],
