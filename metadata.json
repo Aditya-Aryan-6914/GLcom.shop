@@ -1,0 +1,5 @@
+{
+  "name": "AI Shopping Assistant",
+  "description": "A futuristic, platform-agnostic AI Shopping Assistant that provides personalized product recommendations from multiple e-commerce sources through a conversational interface.",
+  "requestFramePermissions": []
+}
