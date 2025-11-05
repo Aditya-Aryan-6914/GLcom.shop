@@ -118,9 +118,9 @@ const App: React.FC = () => {
     setDealAlerts(prev => [...prev, newAlert]);
   };
 
-  const handleRemoveAlert = (alertId: string) => {
+  const handleRemoveAlert = useCallback((alertId: string) => {
     setDealAlerts(prev => prev.filter(alert => alert.id !== alertId));
-  };
+  }, []);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -143,7 +143,7 @@ const App: React.FC = () => {
     }, 20000); // Simulate check every 20 seconds
 
     return () => clearInterval(intervalId);
-  }, [dealAlerts]);
+  }, [dealAlerts, handleRemoveAlert]);
 
 
   return (
